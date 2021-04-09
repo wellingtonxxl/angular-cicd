@@ -1,0 +1,46 @@
+---
+resources:
+- name: angular-cicd
+  type: git
+  icon: github
+  source:
+    uri: https://github.com/wellingtonxxl/angular-cicd.git
+
+- name: node-image
+  type: registry-image
+  source:
+    repository: node
+    tag: 13.10.1-stretch
+
+jobs:
+- name: test
+  public: true
+  plan:
+  - get: node-image
+  - get: angular-cicd
+    trigger: true
+  - task: install
+    image: node-image
+    config:
+      inputs:
+      - name: angular-cicd
+      outputs:
+      - name: dependencies
+        path: angular-cicd/node_modules
+      platform: linux
+      run:
+        path: npm
+        args: ["install"]
+        dir: angular-cicd
+  - task: test
+    image: node-image
+    config:
+      inputs:
+      - name: angular-cicd
+      - name: dependencies
+        path: angular-cicd/node_modules
+      platform: linux
+      run:
+        path: npm
+        args: ["run", "test"]
+        dir: angular-cicd
